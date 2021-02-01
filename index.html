@@ -1,0 +1,563 @@
+
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+ <meta charset="UTF-8" />
+ <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
+ <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+ <title>JoKeR Smart Contract</title>
+ <link rel="stylesheet" href="/static/css/odometer-theme-digital.css" />
+ <link rel="stylesheet" href="/static/css/styles.css" />
+ <link rel="stylesheet" href="/static/css/animate.min.css">
+ <link rel="icon" href="/static/icon.png" type="image/x-icon"/>
+ <style>[v-cloak] { display:none; }
+  .marquee,
+  .marquee-with-options,
+  .marquee-vert-before,
+  .marquee-vert {
+    width: 545px;
+    overflow: hidden;
+    display: flex;
+    line-height: 70px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+ 
+</style>
+
+ <script async src="/static/js/js.js"></script>
+ <script src="/static/js/jquery.min.js"></script>
+ <script src="/static/js/vue.min.js"></script>
+ <script src="/static/js/axios.min.js"></script>
+ <script src="/static/js/js.cookie.min.js"></script>
+ <script src="/static/js/vue-i18n.min.js"></script>
+ <script src="/static/js/jquery.qrcode.min.js"></script>
+ <script src="/static/js/odometer.min.js"></script>
+
+
+
+
+</style>
+
+</head>
+<body>
+<main id="App" v-cloak="">
+ <div class="header">
+  <div class="header__wrap">
+   <div class="header__item">
+    <div class="header__label">
+      JoKeR Smart Contract
+    </div>
+    <div class="header__value"  v-if="addressList">
+     <span v-text="addressList"></span>
+    </div>
+   </div>
+   <div class="header__grow"> 
+   </div>
+   <div class="header__itemS header__item">
+    <div class="header__label" @click.prevent="langShow = 'true'">
+     <!-- {{$t("message.syslang")}} -->
+    </div>
+    <div class="header__value lang" @mouseenter.prevent="langShow = 'true'" @mouseenter.prevent="langShow = 'false'">
+     <div @click.prevent="langShow = 'true'">
+      <img :src="'/static/images/lang/'+loc_lg+'.svg'" /> {{$t("message.lang")}}
+     </div>
+     <ul v-show=" langShow=='true' ">
+      <li><a href="/" @click.prevent="lang('en');"><img src="/static/images/lang/en.svg" /> English</a></li>      
+      <li><a href="/" @click.prevent="lang('zh');"><img src="/static/images/lang/zh.svg" /> 中文繁體</a></li>     
+      <li><a href="/" @click.prevent="lang('ja');"><img src="/static/images/lang/ja.svg" /> 日本語</a></li>      
+      <li><a href="/" @click.prevent="lang('ko');"><img src="/static/images/lang/ko.svg" /> 한국어</a></li>      
+      <li><a href="/" @click.prevent="lang('ar');"><img src="/static/images/lang/ar.svg" /> العربية </a></li>  
+      <li><a href="/" @click.prevent="lang('ru');"><img src="/static/images/lang/ru.svg" /> Pусский</a></li>  
+      <li><a href="/" @click.prevent="lang('fa');"><img src="/static/images/lang/fa.svg" /> فارسی </a></li>    
+      <li><a href="/" @click.prevent="lang('es');"><img src="/static/images/lang/es.svg" /> Espa&ntilde;ol</a></li>   
+     </ul>
+    </div>
+   </div>
+
+   <div id="broadcast" class="bar" name="giftactive">
+      <div class="marquee">{{$t("message.Walkinglantern")}}</div>
+  </div>
+  </div>
+ </div>
+
+ <div class="langblock">
+  <a href="/" @click.prevent="lang('en');"  class="langwrap langwrap_en"><img src="/static/images/lang/en1.svg" alt=""></a>
+  <a href="/" @click.prevent="lang('zh');"  class="langwrap langwrap_fa"><img src="/static/images/lang/zh1.svg" alt=""></a>
+  <a href="/" @click.prevent="lang('ja');"  class="langwrap langwrap_ru"><img src="/static/images/lang/ja1.svg" alt=""></a>
+  <a href="/" @click.prevent="lang('ko');"  class="langwrap langwrap_zh"><img src="/static/images/lang/ko1.svg" alt=""></a>
+  <a href="/" @click.prevent="lang('ar');"  class="langwrap langwrap_es"><img src="/static/images/lang/ar1.svg" alt=""></a>
+  <a href="/" @click.prevent="lang('ru');"  class="langwrap langwrap_es"><img src="/static/images/lang/ru1.svg" alt=""></a>
+  <a href="/" @click.prevent="lang('fa');"  class="langwrap langwrap_ar"><img src="/static/images/lang/fa1.svg" alt=""></a>
+  <a href="/" @click.prevent="lang('es');"  class="langwrap langwrap_tr"><img src="/static/images/lang/es1.svg" alt=""></a>
+</div>
+
+
+ <section  class="section-top">
+  <img  class="top-logo" src="/static/images/logo.png" width="120" />
+  <div class="container">
+   <div class="contract-info">
+    <div class="contract-title" style="background-image: linear-gradient(-180deg, #F4B95A 0%, #DE9835 100%);    -webkit-text-fill-color: transparent;-webkit-background-clip: text;">{{$t("message.circulation")}}</div>
+    <div class="contract-number">
+     <div class="odometer" ref="odometer"></div>
+    </div>
+    <div class="contract-footer">
+     <p class="contract-predict">{{$t("message.predict")}}</p>
+     <p class="contract-counter" v-ctimer="contract.countdown_at"></p>
+    </div>
+    <div class="contract-ring">{{$t("message.ring")}} 0</div>
+   </div>
+   <div class="" v-show="tab == 'main'">
+    <div class="contract-description">
+      <img src="/static/images/icon.png" alt="">
+     <p>{{$t("message.description")}}</p>
+    </div>
+    <div class="menu">
+     <div>
+      <button class="button" @click.prevent="tab = 'tutorial'">
+       <div class="button-content">
+        {{$t("message.join")}}
+       </div>
+       <div class="button-image">
+       </div></button>
+     </div>
+     <div>
+      <button class="button" @click.prevent="tab = 'guide'">
+       <div class="button-content">
+        {{$t("message.share")}}
+       </div>
+       <div class="button-image">
+       </div></button>
+     </div>
+     <div>
+      <a class="button" href="https://github.com/13908274570/JoKeR.git" target="_blank">
+       <div class="button-content">
+        {{$t("message.present")}}
+       </div>
+       <div class="button-image">
+       </div>
+      </a>
+     </div>
+    </div>
+    <div class="counter-input">
+     <input id="trx_amount" class="counter-wrapper" v-model="trxAmount" maxlength="34" :placeholder="$t('message.contAddress')">
+     <a href="/" class="login-btn" @click.prevent="login(true)">{{$t("message.sigIn")}}</a>
+    </div>
+    <div class="tron-acc" v-if="addressList">
+     {{$t("message.current")}}：<a style="    text-decoration: none" :href="'https://tronscan.io/#/address/'+addressList+'/transfers'" target="_blank">{{addressList}}</a>
+
+     <a href="/" class="sign" @click.prevent="signOut()">{{$t("message.sigOut")}}</a>
+    </div>
+   </div>
+  </div>
+ </section>
+
+ <section  class="section" v-show="tab == 'main'">  
+  <div class="container">
+   <h2 class="wow fadeInUp animated"  data-wow-duration="1s" data-wow-delay=".5s"  style="background-image: linear-gradient(-180deg, #F4B95A 0%, #DE9835 100%);    -webkit-text-fill-color: transparent;-webkit-background-clip: text;">{{$t("message.startCir")}}</h2>
+
+   <div class="panel-info panel-bg2">
+    <h3 class="wow fadeInUp animated"  data-wow-duration="1s" data-wow-delay=".5s" style="background-image: linear-gradient(-180deg, #F4B95A 0%, #DE9835 100%);    -webkit-text-fill-color: transparent;-webkit-background-clip: text;" class="pos-rel">
+      {{$t("message.qrCCode")}}
+
+    </h3>
+    <a href="/" @click.prevent="notice($t('message.shareTip'))" class="pos-abs pos-question">?</a>
+    <div>
+     <div class="panel-info-item">
+     <span>{{$t("message.cirTime")}}</span>
+           <span v-for="item in financials">  
+             <input v-model="selectDay"   type="radio" :value="item.cycle" @click="cirReturn=(item.rate*100).toFixed(2);setQRtextS(item.rechargeAddress),statusNum = item.statusNum"> {{item.cycle}} {{$t("message.period.day")}}
+           </span>
+     </span>
+     </div>
+     <div class="panel-info-item">
+      <span>{{$t("message.cirReturn")}}</span>
+      <span class="trc-value">{{cirReturn}}%</span>
+     </div> 
+     <div class="panel-info-item">
+      <span>{{$t("message.qrCCodeExpir")}}</span>
+      <span v-show="statusNum ==2">00:00:00</span>
+      <span v-show="statusNum ==''" class="trc-value" v-timer="expiredate">00:00:00</span>
+     </div>
+     <div class="qrcode-box">
+      <div v-show="statusNum ==''" class="qrcode" id="qrcode"></div>
+     
+        <div v-show="statusNum ==2" class="qrcode">
+          <img v-if="addressList" style="width: 200px;height: 200px;opacity: 0.1;"  src="/static/images/ll.png" alt="">
+       
+      </div>
+
+      <div v-show="statusNum ==2"  class="qr-text"> 
+        <div v-if="addressList" >{{$t("message.LSOSOSOq")}}</div>
+      
+       </div>
+      <div v-show="statusNum ==''" class="qr-text">{{qrcodeText}}  <a v-if="addressList" class="cuposLi"  href="/" @click.prevent="copyText(qrcodeText)"> {{$t("message.copyText")}}</a></div>
+     </div>
+    </div>
+   </div>
+   <div class="panel-info panel-bg2">
+    <h3 class="wow fadeInUp animated"  data-wow-duration="1s" data-wow-delay=".5s" style="background-image: linear-gradient(-180deg, #F4B95A 0%, #DE9835 100%);    -webkit-text-fill-color: transparent;-webkit-background-clip: text;">{{$t("message.contContract")}}</h3>
+    <div>
+     <div class="panel-info-item">
+      <span>{{$t("message.coutAddre")}}</span>
+      <span class="trc-value">{{totalconten.history_address_count !=null ? totalconten.history_address_count:'---' }}</span>
+     </div>
+
+     <div class="panel-info-item">
+      <span>{{$t("message.countCirul")}}</span>
+      <span class="trc-value">{{totalconten.history_circulation !=null ? totalconten.history_circulation:'---'}} USDT</span>
+     </div>
+
+     <div class="panel-info-item">
+      <span>{{$t("message.prizePool")}}</span>
+      <span class="trc-value">{{totalconten.ring_pool !=null ? totalconten.ring_pool:'---'}} USDT</span>
+     </div>
+
+    </div>
+   </div>
+
+   <div class="panel-info panel-bg2">
+    <h3 class="wow fadeInUp animated"  data-wow-duration="1s" data-wow-delay=".5s" style="background-image: linear-gradient(-180deg, #F4B95A 0%, #DE9835 100%);    -webkit-text-fill-color: transparent;-webkit-background-clip: text;">{{$t("message.sharePlan")}}</h3>
+    <div>
+      <!-- {{share_plan}} -->
+     <div class="panel-info-item">
+      <span>{{$t("message.shareLink")}}<br/><a style="color: #DD9532;text-decoration: underline;" href="/" @click.prevent="prizeLog($t('message.prizeLog'),2)">{{$t("message.prizeLog")}}</a> </span>
+      <a class="btn btnco" v-if="addressList"  :href="location.origin + '/#/' + tron.account+'.html'" @click.prevent="copyText(share_plan.share_url)" >{{$t("message.copyText")}}</a>
+      <span class="trc-value" v-if="!addressList">---</span>                  
+     </div> 
+     <div class="panel-info-item">                                            
+      <span>{{$t("message.friendsTotal")}}</span>
+      <span class="trc-value">{{share_plan.form_user_count !=null ?share_plan.form_user_count:'---'}}</span>
+     </div>
+     <div class="panel-info-item">
+      <span>{{$t("message.fCirculatTotal")}}</span>
+      <span class="trc-value">{{share_plan.recharge_quantity_sum !=null ?share_plan.recharge_quantity_sum:'---'}} USDT</span>
+     </div>
+    </div>
+   </div>
+
+
+   <div class="panel-info panel-bg2">
+    <h3 class="wow fadeInUp animated"  data-wow-duration="1s" data-wow-delay=".5s" style="background-image: linear-gradient(-180deg, #F4B95A 0%, #DE9835 100%);    -webkit-text-fill-color: transparent;-webkit-background-clip: text;">{{$t("message.tissue")}}</h3>
+    <div>
+     <div class="panel-info-item">
+      <span>{{$t("message.personal1st")}}</span>
+      <span class="trc-value">
+          {{userFromSumGroups.lv1 !=null? userFromSumGroups.lv1:'---'}}
+          <a href="/" @click.prevent="showTeams(1,$t('message.personal1st'))" v-if="userFromSumGroups.lv1>0">{{$t("message.view")}}</a>
+        </span>
+     </div>
+
+     <div class="panel-info-item">
+      <span>{{$t("message.personal2st")}}</span>
+      <span class="trc-value">
+        {{userFromSumGroups.lv2 !=null? userFromSumGroups.lv2:'---'}}
+          <a href="/" @click.prevent="showTeams(2,$t('message.personal2st'))" v-if="userFromSumGroups.lv2>0">{{$t("message.view")}}</a>
+        </span>
+     </div>
+     <div class="panel-info-item">
+      <span>{{$t("message.personal3st")}}</span>
+      <span class="trc-value">
+        {{userFromSumGroups.lv3 !=null? userFromSumGroups.lv3:'---'}}
+          <a href="/" @click.prevent="showTeams(3,$t('message.personal3st'))" v-if="userFromSumGroups.lv3>0">{{$t("message.view")}}</a>
+        </span>
+     </div>
+     <div class="panel-info-item">
+      <span>{{$t("message.personal4st")}}</span>
+      <span class="trc-value">
+        {{userFromSumGroups.lv4 !=null? userFromSumGroups.lv4:'---'}}
+          <a href="/" @click.prevent="showTeams(4,$t('message.personal4st'))" v-if="userFromSumGroups.lv4>0">{{$t("message.view")}}</a>
+        </span>
+     </div>
+     <div class="panel-info-item">
+      <span>{{$t("message.personal11st")}}</span>
+      <span class="trc-value">
+        {{userFromSumGroups.lv5 !=null? userFromSumGroups.lv5:'---'}}
+          <a href="/" @click.prevent="showTeams(5,$t('message.personal11st'))" v-if="userFromSumGroups.lv5>0">{{$t("message.view")}}</a>
+        </span>
+     </div>
+    </div>
+   </div>
+
+   <div class="panel-info panel-bg2">
+    <h3 class="wow fadeInUp animated"  data-wow-duration="1s" data-wow-delay=".5s" style="background-image: linear-gradient(-180deg, #F4B95A 0%, #DE9835 100%);    -webkit-text-fill-color: transparent;-webkit-background-clip: text;">{{$t("message.personalData")}}</h3>
+    <div>
+     <div class="panel-info-item">
+      <span>{{$t("message.circulateUsdt")}}</span>
+      
+      <span class="trc-value">{{personal.recharge_quantity_sum !=null ? personal.recharge_quantity_sum:'---'}}</span>
+     </div>
+     <div class="panel-info-item">
+      <span>{{$t("message.returnUsdt")}}</span>
+      <span class="trc-value">{{personal.withdraw_quantity_sum !=null ? personal.withdraw_quantity_sum:'---'}}</span>
+     </div>
+     <div class="panel-info-item">
+      <span>{{$t("message.shareReward")}}</span>
+
+      <span class="trc-value">{{personal.share_reward !=null ? personal.share_reward:'---'}}</span>
+     </div> 
+     <div class="panel-info-item">
+      <span>{{$t("message.innovatReward")}}</span>
+      <span class="trc-value">{{personal.ring_reward !=null ? personal.ring_reward:'---'}}</span>
+     </div>
+     <div class="panel-info-item">
+      <span>{{$t("message.curPersonalPL")}}</span>  
+
+      <span class="trc-value">{{personal.profit !=null ? personal.profit:'---'}}</span>
+     </div>
+    </div>
+   </div>
+
+   <div class="panel-info panel-bg4">
+    <h3 class="wow fadeInUp animated"  data-wow-duration="1s" data-wow-delay=".5s" style="background-image: linear-gradient(-180deg, #F4B95A 0%, #DE9835 100%);    -webkit-text-fill-color: transparent;-webkit-background-clip: text;">{{$t("message.hashOrder")}}</h3>
+    <div>
+     <div class="table">
+      <table>
+       <thead>
+       <tr>
+        <th>{{$t("message.cirTime")}}</th>
+        <th>{{$t("message.cirRes")}}</th>
+        <th>{{$t("message.status")}}</th>
+       </tr>
+       </thead>
+       <tbody>
+       <tr v-for="(v, index) in orders">
+        <td>({{v.cycle}}{{$t("message.period.day")}})  <a target="_blank" :href="'https://tronscan.io/#/transaction/'+v.hash" class="trc-value">{{$t("message.view")}}</a></td>
+        <td>{{parseFloat(v.investment_amount)}}→{{parseFloat(v.return_amount)}}</td>
+        <td v-if="v.return_status==false">
+         <span v-cstimer="v.return_at"></span>
+        </td>
+        <td v-else>
+          ({{ 2 | oStatus}})
+          <a target="_blank" :href="'https://tronscan.io/#/address/'+addressList+'/transfers'" class="trc-value">{{$t("message.view")}}</a>
+         </td>
+        </td>
+       </tr>
+       </tbody>
+      </table>
+     </div>
+    </div>
+   </div>
+   <div class="panel-info panel-bg4">
+    <h3 class="wow fadeInUp animated"  data-wow-duration="1s" data-wow-delay=".5s" style="background-image: linear-gradient(-180deg, #F4B95A 0%, #DE9835 100%);    -webkit-text-fill-color: transparent;-webkit-background-clip: text;">{{$t("message.troAdrrs")}}</h3>
+    <div>
+     <div class="table">
+      <table>
+       <thead>
+       <tr>
+        <th>{{$t("message.address")}}</th>
+        <th>{{$t("message.view")}}</th>
+       </tr>
+       </thead>
+       <tbody>
+       <tr v-for="(v, index) in contract.AdrsList">
+        <td class="tron-acc"><a :href="'https://tronscan.io/#/address/'+v.address" @click.prevent="copyText('https://tronscan.io/#/address/'+v.address)" class="bs">{{v.address}}</a></td>
+        <td><a target="_blank" :href="'https://tronscan.io/#/address/'+v.address" class="trc-value">{{$t("message.view")}}</a></td>
+       </tr>
+       </tbody>
+      </table>
+     </div>
+    </div>
+   </div>
+
+  </div>
+
+ </section>
+
+ <section class="section" v-show="tab == 'guide'">
+  <div class="page">
+   <h3>{{$t("message.share")}}</h3>
+   <div v-html="$t('message.shareDesc')+ $t('message.ruleDesc')"></div>
+   <a href="/" @click.prevent="tab = 'main'">{{$t("message.back")}}</a>
+  </div>
+ </section>
+ <section class="section" v-show="tab == 'tutorial'">
+  <div class="page">
+   <h3>{{$t("message.join")}}</h3>
+   <div v-html="$t('message.joinDesc') + $t('message.ruleDesc')"></div>
+   <a href="/" @click.prevent="tab = 'main'">{{$t("message.back")}}</a>
+  </div>
+ </section>
+
+ <section class="section" v-show="tab == 'tissue'">
+  <div class="container">
+   <div class="panel-info panel-bg4">
+    <h3>{{curTitle}}</h3>
+    <div class="table">
+     <table>
+      <thead>
+      <tr>
+       <th width="60%">{{$t("message.address")}}</th>
+       <th>{{$t("message.circulationIn")}}</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr v-for="(v, index) in curTeamlist">
+       <td><a :href="'https://tronscan.io/#/address/'+v.address" target="_blank">{{v.address}}</a></td>
+       <td>{{v.quantity}}</td>
+      </tr>
+      </tbody>
+     </table>
+    </div>
+    <div class="panel-info-item">
+     <a class="btn btn-m-l" href="#" @click.prevent="tab = 'main'">{{$t("message.back")}}</a>
+    </div>
+   </div>
+  </div>
+ </section>
+
+ <section class="section" v-show="tab == 'hashOrder'">
+  <div class="container">
+   <div class="panel-info panel-bg4">
+    <h3>{{curTitle}}</h3>
+    <div class="table">
+     <table>
+      <thead>
+      <tr>
+       <th>{{$t("message.cTime")}}</th>
+       <th>{{$t("message.amount")}}</th>
+       <th>{{$t("message.status")}}</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr v-for="(v, index) in accList">
+       <td>{{ parseInt(v.return_at) | formatDate }} </td>
+       <td>{{v.return_amount}}</td>
+       <td v-if="v.return_status == true">
+        {{ 2 | oStatus}}
+       </td>
+      </tr>
+      </tbody>
+     </table>
+    </div>
+    <div class="panel-info-item">
+     <a class="btn btn-m-l" href="#" @click.prevent="tab = 'main'">{{$t("message.back")}}</a>
+    </div>
+   </div>
+  </div>
+ </section>
+
+
+ <section class="section" v-show="tab == 'main'">
+  <div class="container">
+   <div>
+    <h3 class="wow fadeInUp animated"  data-wow-duration="1s" data-wow-delay=".5s"  style="background-image: linear-gradient(-180deg, #F4B95A 0%, #DE9835 100%);    -webkit-text-fill-color: transparent;-webkit-background-clip: text;">{{$t("message.ecosystem1")}}</h3>
+    <p  class="wow fadeInUp animated"  data-wow-duration="1s" data-wow-delay=".5s">{{$t("message.ecosystemLIS")}}</p>
+   </div>
+   <div class="Ecosystem_box">
+    <div class="Ecosystem">
+      <div  class="wow flipInY animated"   data-wow-delay="1.5s">
+        <img src="/static/images/1.png" alt="">
+        <h3>{{$t("message.ecosystemLIS1")}}</h3>
+        <p>{{$t("message.ecosystemLIS2")}}</p>
+      </div>
+
+    </div>
+    <div class="Ecosystem">
+      <div  class="wow flipInY animated"   data-wow-delay="1.5s">
+        <img src="/static/images/2.png" alt="">
+        <h3>{{$t("message.ecosystemLIS3")}}</h3>
+        <p>{{$t("message.ecosystemLIS4")}}</p>
+      </div>
+
+    </div>
+    <div class="Ecosystem">
+      <div  class="wow flipInY animated"   data-wow-delay="1.5s">
+        <img src="/static/images/3.png" alt="">
+        <h3>{{$t("message.ecosystemLIS5")}}</h3>
+        <p>{{$t("message.ecosystemLIS6")}}</p>
+      </div>
+
+    </div>
+    <div class="Ecosystem">
+      <div  class="wow flipInY animated"   data-wow-delay="1.5s">
+        <img src="/static/images/4.png" alt="">
+        <h3>{{$t("message.ecosystemLIS7")}}</h3>
+        <p>{{$t("message.ecosystemLIS8")}}</p>
+      </div>
+    </div>
+    <div class="Ecosystem">
+      <div  class="wow flipInY animated"   data-wow-delay="1.5s">
+        <img src="/static/images/5.png" alt="">
+        <h3>{{$t("message.ecosystemLIS9")}}</h3>
+        <p>{{$t("message.ecosystemLIS10")}}</p>
+      </div>
+    </div>
+    <div class="Ecosystem">
+      <div  class="wow flipInY animated"   data-wow-delay="1.5s">
+        <img src="/static/images/6.png" alt="">
+        <h3>{{$t("message.ecosystemLIS11")}}</h3>
+        <p>{{$t("message.ecosystemLIS12")}}</p>
+      </div>
+    </div>
+   </div>
+  </div>
+ </section>
+ <section class="section" v-show="tab == 'main'">
+  <div class="container">
+    <div>
+     <h3 class="wow fadeInUp animated"  data-wow-duration="1s" data-wow-delay=".5s"  style="background-image: linear-gradient(-180deg, #F4B95A 0%, #DE9835 100%);    -webkit-text-fill-color: transparent;-webkit-background-clip: text;"> {{$t("message.ecosystemLISPO")}}</h3>
+    </div>
+    <div>
+      <div class="report-list-title">
+        <div class="wow fadeInUp animated"  data-wow-duration="1s" data-wow-delay=".5s" v-for="(item,index) in questions" :key="'infoA-'+ index">
+          <div class="report-list">
+            <p class="report-list_box">{{item.title | trim}}</p>
+            <img  @click="toggle(item)" src="/static/images/arrow.png" alt="">
+          </div>
+          <transition name="fade"
+                      mode="in-out">
+            <div v-html="item.content" class="report-conten"  v-show="item.choose">
+          </transition>
+        </div>
+     </div>
+
+     <h3 class="wow fadeInUp animated"  data-wow-duration="1s" data-wow-delay=".5s" style="background-image: linear-gradient(-180deg, #F4B95A 0%, #DE9835 100%);    -webkit-text-fill-color: transparent;-webkit-background-clip: text;">{{$t("message.mtoken")}}</h3>
+     <div class="coinList">
+  
+       <div class="coin" v-for="(v, index) in coinList">
+        <a :href="v.url" :title="v.id" target="_blank">
+         <img :src="'/static/images/'+v.logo" :alt="v.id" class="coinLogo">
+         <div class="coinName">{{v.id}}</div>
+        </a>
+       </div>
+     </div>
+
+     <img class="im_box wow slideInLeft postr animated" src="/static/images/ib.png" alt="">
+     <p style="margin-top:50px;line-height: 30px;" v-html="$t('message.ecosystemLISPO1')">
+
+
+  </p>
+   </div>
+
+
+  
+</section>
+ <section class="footer_conten">
+   
+  <div class="copyright">
+    <a href="/">
+      <img src="/static/images/logo.png"></a>
+    </div>
+
+ </section>
+
+
+
+
+ 
+</main>
+<script src="/static/js/email-decode.min.js"></script>
+<script src="/static/js/jquery.marquee.min.js"></script>
+
+
+<script src="/static/js/common.js?time=joker"></script>
+<script src="/static/js/wow.js"></script>
+<script>
+	$('.marquee').marquee();
+  if (!(/msie [6|7|8|9]/i.test(navigator.userAgent))){
+	  new WOW().init();
+  };
+  </script>
+</body>
+</html>
